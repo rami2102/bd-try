@@ -1,40 +1,60 @@
 # Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd onboard` to get started.
+This project uses **bd** (beads) for all issue tracking. Do not use markdown TODOs or other task systems.
 
-## Quick Reference
+## Workflow (every session)
 
 ```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --status in_progress  # Claim work
-bd close <id>         # Complete work
-bd sync               # Sync with git
+bd ready                                  # Find unblocked work
+bd show <id>                              # Read issue context
+bd update <id> --status=in_progress       # Claim it
+# ... do the work ...
+bd close <id> --reason="what was done"    # Complete it
+bd sync                                   # Sync to git (run at session end)
 ```
 
-## Landing the Plane (Session Completion)
+## Creating Issues
 
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
+```bash
+bd create --title="Fix X" --type=task --priority=2
+```
 
-**MANDATORY WORKFLOW:**
+- **Types:** task, bug, feature, epic
+- **Priority:** 0=critical, 1=high, 2=medium, 3=low, 4=backlog (use numbers, not words)
 
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd sync
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
+## Updating Issues
 
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
+```bash
+bd update <id> --notes "COMPLETED: X. IN PROGRESS: Y. NEXT: Z."
+bd update <id> --description "new description"
+bd update <id> --design "design notes"
+```
 
+**Do NOT use `bd edit`** — it opens $EDITOR and will hang the agent.
+
+## Dependencies
+
+Direction is **"X needs Y"**:
+```bash
+bd dep add <issue> <depends-on>           # issue depends on depends-on
+bd blocked                                # Show blocked issues
+```
+
+## Session Completion
+
+Work is NOT complete until `git push` succeeds.
+
+```bash
+# 1. Close finished work
+bd close <id> --reason="what was done"
+
+# 2. Sync and push
+bd sync
+git pull --rebase
+git push
+git status  # MUST show "up to date with origin"
+```
+
+- File bd issues for any remaining work before ending
+- Run quality gates if code changed (tests, linters)
+- NEVER say "ready to push when you are" — YOU must push
